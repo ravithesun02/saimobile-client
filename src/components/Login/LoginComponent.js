@@ -95,6 +95,16 @@ class Login extends Component{
                     isModal:true,
                     loading:false
                 });
+            else if(user.user_role.isAdmin)
+            {
+                localStorage.setItem('isAdmin',true);
+                localStorage.setItem('isStaff',false);
+            }
+            else if(user.user_role.isStaff)
+            {
+                localStorage.setItem('isAdmin',false);
+                localStorage.setItem('isStaff',true);
+            }
 
         }
       }
@@ -104,6 +114,33 @@ class Login extends Component{
             loading:true
           });
       }
+
+      handleAdmin=()=>{
+
+        localStorage.setItem('isAdmin',true);
+        localStorage.setItem('isStaff',false);
+
+        this.setState({
+            isModal:false
+        });
+
+        this.props.history.push('/dashboard');
+
+      }
+
+      handleStaff=()=>{
+
+        localStorage.setItem('isAdmin',false);
+        localStorage.setItem('isStaff',true);
+
+        this.setState({
+            isModal:false
+        });
+
+        this.props.history.push('/dashboard');
+
+      }
+
 
     render()
     {
@@ -140,7 +177,6 @@ class Login extends Component{
 
                 <Dialog 
                     open={this.state.isModal}
-                    onClose={this.handleModalClose}
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
@@ -148,10 +184,10 @@ class Login extends Component{
                 <DialogContent dividers>
                 <Grid className={classes.modalDialog} container spacing={2}>
                 <Grid item xs={6}>
-                    <Button variant="contained" color="primary" fullWidth="true">Admin</Button>
+                    <Button variant="contained" color="primary" fullWidth="true" onClick={this.handleAdmin}>Admin</Button>
                 </Grid>
                 <Grid item xs={6}>
-                    <Button variant="contained" color="secondary" fullWidth="true">Staff</Button>
+                    <Button variant="contained" color="secondary" fullWidth="true" onClick={this.handleStaff}>Staff</Button>
                 </Grid>
             </Grid>
                 </DialogContent>
