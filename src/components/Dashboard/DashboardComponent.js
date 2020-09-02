@@ -3,6 +3,8 @@ import Header from './HeaderComponent';
 import { Grid, Button, withStyles, Hidden } from '@material-ui/core';
 import TabComponent from './TabComponent';
 import TabularComponent from './TableComponent';
+import { baseUrl } from '../Reusable/baseUrl';
+import { Redirect } from 'react-router-dom';
 
 const useStyles=theme=>({
 
@@ -27,16 +29,57 @@ class Dashboard extends Component
     {
         super(props);
         this.state={
-
+            isSignedIn:false,
+            userdata:{},
+            token:null,
+            isAdmin:false,
+            isStaff:false
         }
     }
 
+    fetchUserData=async ()=>{
+        let res=await fetch(baseUrl+'/admin/loggedIn',{
+            method:'GET',
+            headers:{
+                'Authorization':'Bearer '+this.state.token
+            },
+            credentials:'same-origin'
+        });
 
+        if(res.ok)
+        {
+            let data=await res.json();
+            let user=data.user;
+            console.log(user);
+            await this.setState({
+                userdata:user,
+                isSignedIn:true
+            });
 
-    componentDidMount()
+        }
+      }
+
+   async componentWillMount()
     {
-        console.log(this.props);
+        if(this.props.isSignedIn)
+        {
+            this.setState({
+                isSignedIn:this.props.isSignedIn,
+                userdata:this.props.userdata,
+                token:this.props.token
+            });
+        }
+        else if(localStorage.getItem('jwt'))
+        {
+            await this.fetchUserData();
+        }
+
+        this.setState({
+            isAdmin:localStorage.getItem('isAdmin'),
+            isStaff:localStorage.getItem('isStaff')
+        });
     }
+
 
     handleNewTaskSubmission=(data)=>{
 
@@ -47,6 +90,14 @@ class Dashboard extends Component
     render()
     {
         const {classes}=this.props;
+
+        if(!this.state.isSignedIn)
+        {
+            return(
+                <Redirect to='/'/>
+            )
+        }
+
         return (
             <React.Fragment>
             <Grid direction="column" container className={classes.container}>

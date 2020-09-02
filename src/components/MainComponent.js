@@ -1,9 +1,10 @@
 import React , {Component} from 'react';
 import Login from './Login/LoginComponent';
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { BrowserRouter } from "react-router-dom";
 import {baseUrl} from './Reusable/baseUrl';
 import Dashboard from './Dashboard/DashboardComponent';
+import { Backdrop, CircularProgress } from '@material-ui/core';
  
 class Main extends Component{
 
@@ -13,18 +14,23 @@ class Main extends Component{
         this.state={
             isSignedIn:false,
             userdata:{},
-            token:null
+            token:null,
+            isLoading:false
         }
     }
 
    async componentDidMount()
     {
         console.log(this.props);
+
+        this.setState({isLoading:true});
        
         if(typeof window != undefined)
             window.addEventListener('storage',this.authCheckup)
         
         await this.authCheckup();
+
+        this.setState({isLoading:false});
     }
 
     componentWillUnmount()
@@ -75,17 +81,26 @@ class Main extends Component{
 
     logout=()=>{
         localStorage.removeItem('jwt');
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('isStaff');
     }
 
     render()
     {
-        return (
 
+        return (
         <BrowserRouter>
             <Switch>
                 <Route exact path='/' component={Login}/>
                 <Route exact path="/dashboard" component={()=> <Dashboard isSignedIn={this.state.isSignedIn} token={this.state.token} userdata={this.state.userdata} /> }/>
             </Switch>
+            {
+                this.state.isSignedIn ? <Redirect to='/dashboard' /> : <Redirect to='/'/>
+            }
+
+            <Backdrop  open={this.state.isLoading} style={{color:'#fff',zIndex:'10'}}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
         </BrowserRouter>
         )
     }

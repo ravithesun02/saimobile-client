@@ -99,11 +99,13 @@ class Login extends Component{
             {
                 localStorage.setItem('isAdmin',true);
                 localStorage.setItem('isStaff',false);
+                this.props.history.push('/dashboard');
             }
             else if(user.user_role.isStaff)
             {
                 localStorage.setItem('isAdmin',false);
                 localStorage.setItem('isStaff',true);
+                this.props.history.push('/dashboard');
             }
 
         }
