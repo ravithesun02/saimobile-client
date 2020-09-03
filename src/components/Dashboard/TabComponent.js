@@ -38,7 +38,7 @@ class TabComponent extends Component{
 
                 <Tab label="Completed Task" value={1} />
 
-               {this.props.isAdmin==="true" && <Tab label="New Task" value={2} />}
+               {this.props.isAdmin && <Tab label="New Task" value={2} />}
 
                 <Tab label="Income" value={3} />
                 

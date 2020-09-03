@@ -94,6 +94,9 @@ class Dashboard extends Component
     {
 
         //console.log(this.props);
+        this.setState({
+            isLoading:true
+        });
 
         if(this.props.isSignedIn)
         {
@@ -109,19 +112,11 @@ class Dashboard extends Component
         }
 
         await this.setState({
-            isAdmin:localStorage.getItem('isAdmin'),
-            isStaff:localStorage.getItem('isStaff')
+            isAdmin:JSON.parse(localStorage.getItem('isAdmin')),
+            isStaff:JSON.parse(localStorage.getItem('isStaff'))
         });
 
 
-        console.log(this.state);
-    }
-
-    async componentDidMount()
-    {
-        this.setState({
-            isLoading:true
-        });
         if(this.state.isAdmin)
         {
             await this.fetchNewTask();
@@ -132,6 +127,7 @@ class Dashboard extends Component
             isLoading:false
         });
 
+        console.log(this.state);
     }
 
 
@@ -211,6 +207,7 @@ class Dashboard extends Component
         let pending=[];
         let completed=[];
 
+
         result.forEach((item,index)=>{
             if(item.staff_name)
             {
@@ -223,10 +220,13 @@ class Dashboard extends Component
             new_task.push(item);
         });
 
+        console.log(new_task);
+
        await this.setState({
             new_task:new_task,
             pending_task:pending,
-            completed_task:completed
+            completed_task:completed,
+            table_data:pending
         });
 
     }
@@ -239,17 +239,19 @@ class Dashboard extends Component
         });
 
         if(data===0)
-            this.setState({
+           await this.setState({
                 table_data:this.state.pending_task
             });
         else if(data===1)
-            this.setState({
+           await this.setState({
                 table_data:this.state.completed_task
             }); 
         else if(data===2)
-            this.setState({
+           await this.setState({
                 table_data:this.state.new_task
             });
+
+        console.log(this.state.table_data);
     }
 
 
@@ -278,7 +280,7 @@ class Dashboard extends Component
                 </Grid>
 
                 <Grid item style={{marginTop:'1%'}}>
-                    <TabularComponent data={this.state.table_data}/>
+                    <TabularComponent data={this.state.table_data} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
                 </Grid>
                    
                 </Grid>

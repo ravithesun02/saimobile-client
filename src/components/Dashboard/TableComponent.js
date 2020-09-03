@@ -1,7 +1,8 @@
 import React , {Component} from 'react';
-import { Grid, withStyles,FormControl,InputLabel,Input, InputAdornment } from '@material-ui/core';
+import { Grid, withStyles,FormControl,InputLabel,Input, InputAdornment, Hidden } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
+import TableData from './TableData';
 
 const useStyles=theme=>({
 
@@ -51,12 +52,18 @@ const CssTextField = withStyles({
 
 class TabularComponent extends Component{
 
+  componentDidMount()
+  {
+    console.log(this.props.data);
+  }
+
     render()
     {
-        const {classes}=this.props;
+        const {classes,data,isAdmin,isStaff}=this.props;
+        // console.log(data);
         return(
-          <Grid container spacing={1} className={classes.flex}>
-           <Grid xs={12} className={[classes.flex,classes.margin]} justify="flex-end">
+          <Grid direction="row" container spacing={1} className={classes.flex}>
+           <Grid item xs={12} className={[classes.flex,classes.margin]} justify="flex-end">
             <CssTextField placeholder="Search" label="Search" InputProps={{
                 startAdornment:(
                     <InputAdornment position="start">
@@ -65,10 +72,18 @@ class TabularComponent extends Component{
                 )
             }} />
            </Grid>
-           <Grid xs={12}>
-            
+           <Hidden smDown>
+           <Grid item sm={12} md={12} style={{marginTop:'2%'}}>
+            <TableData data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} />
             
            </Grid>
+           </Hidden>
+           <Hidden smUp>
+           <Grid item xs={12} style={{marginTop:'3%'}}>
+            <TableData data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} />
+            
+           </Grid>
+           </Hidden>
 
             
           </Grid>
