@@ -1,10 +1,11 @@
 import React , {Component} from 'react';
-import {Grid, Button, withStyles, Paper, Link, Typography, Hidden, Dialog, DialogTitle, DialogContent} from '@material-ui/core';
+import {Grid, Button, withStyles, Paper, Link, Typography, Hidden} from '@material-ui/core';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import {baseUrl} from '../Reusable/baseUrl';
 import queryString from 'query-string';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import PropTypes from 'prop-types';
 
 const useStyles=theme=>({
     container:{
@@ -43,22 +44,13 @@ class Login extends Component{
         this.state={
             isModal:false,
             token:null,
-            userdata:{},
+            userdata:[],
             loading:false
         }
     }
 
    async componentWillMount() {
-
-       await this.setStorage();
-
-      //  console.log(this.state.token);
-
-        if(this.state.token!=null)
-        {
-           await this.fetchUserData();
-        }
-        
+       await this.setStorage();      
       }
 
       setStorage=async ()=>{
@@ -70,46 +62,6 @@ class Login extends Component{
         }
       }
 
-      fetchUserData=async ()=>{
-        let res=await fetch(baseUrl+'/admin/loggedIn',{
-            method:'GET',
-            headers:{
-                'Authorization':'Bearer '+this.state.token
-            },
-            credentials:'same-origin'
-        });
-
-        if(res.ok)
-        {
-            let data=await res.json();
-            let user=data.user;
-            console.log(user);
-            await this.setState({
-                userdata:user
-            });
-
-            console.log(this.state.userdata);
-
-            if(user.user_role.isAdmin && user.user_role.isStaff)
-                this.setState({
-                    isModal:true,
-                    loading:false
-                });
-            else if(user.user_role.isAdmin)
-            {
-                localStorage.setItem('isAdmin',true);
-                localStorage.setItem('isStaff',false);
-                this.props.history.push('/dashboard');
-            }
-            else if(user.user_role.isStaff)
-            {
-                localStorage.setItem('isAdmin',false);
-                localStorage.setItem('isStaff',true);
-                this.props.history.push('/dashboard');
-            }
-
-        }
-      }
 
       handleSignIn=()=>{
           this.setState({
@@ -117,31 +69,7 @@ class Login extends Component{
           });
       }
 
-      handleAdmin=()=>{
-
-        localStorage.setItem('isAdmin',true);
-        localStorage.setItem('isStaff',false);
-
-        this.setState({
-            isModal:false
-        });
-
-        this.props.history.push('/dashboard');
-
-      }
-
-      handleStaff=()=>{
-
-        localStorage.setItem('isAdmin',false);
-        localStorage.setItem('isStaff',true);
-
-        this.setState({
-            isModal:false
-        });
-
-        this.props.history.push('/dashboard');
-
-      }
+      
 
 
     render()
@@ -176,26 +104,6 @@ class Login extends Component{
                     </Grid>
                     </Grid>
                 </Grid>
-
-                <Dialog 
-                    open={this.state.isModal}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                <DialogTitle id="alert-dialog-title">{"Login As:-"}</DialogTitle>
-                <DialogContent dividers>
-                <Grid className={classes.modalDialog} container spacing={2}>
-                <Grid item xs={6}>
-                    <Button variant="contained" color="primary" fullWidth="true" onClick={this.handleAdmin}>Admin</Button>
-                </Grid>
-                <Grid item xs={6}>
-                    <Button variant="contained" color="secondary" fullWidth="true" onClick={this.handleStaff}>Staff</Button>
-                </Grid>
-            </Grid>
-                </DialogContent>
-               
-                </Dialog>
-
                 <Backdrop className={classes.backdrop} open={this.state.loading} >
                     <CircularProgress color="inherit" />
                 </Backdrop>
@@ -203,5 +111,9 @@ class Login extends Component{
         )
     }
 }
+
+Login.propTypes = {
+    classes: PropTypes.object.isRequired,
+  };
 
 export default withStyles(useStyles)(Login);

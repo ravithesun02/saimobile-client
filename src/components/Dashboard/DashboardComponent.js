@@ -82,9 +82,11 @@ class Dashboard extends Component
 
 
     handleNewTaskSubmission=(data)=>{
+        this.props.onSubmit(data);
+    }
 
-        console.log(data);
-
+    logout=()=>{
+        this.props.logout();
     }
 
     render()
@@ -102,7 +104,7 @@ class Dashboard extends Component
             <React.Fragment>
             <Grid direction="column" container className={classes.container}>
                 <Grid item>
-                <Header onDataReceive={(data)=>this.handleNewTaskSubmission(data)}/>
+                <Header onDataReceive={(data)=>this.handleNewTaskSubmission(data)} logout={this.logout}/>
                 <Grid item container direction="column" className={classes.root}>
                    
                 <Grid item>

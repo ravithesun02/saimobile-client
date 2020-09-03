@@ -59,7 +59,7 @@ class Header extends React.Component{
                         </Hidden>
                         <Button variant="contained" style={{backgroundColor:'#DA5552',color:'whitesmoke',marginRight:'2%'}} onClick={this.handleTask}>Add New Task</Button>
                    
-                    <IconButton color="secondary">
+                    <IconButton color="secondary" onClick={()=>this.props.logout()}>
                         <ExitToAppIcon/>
                     </IconButton>
                     </Toolbar>

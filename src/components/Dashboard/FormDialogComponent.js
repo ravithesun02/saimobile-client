@@ -72,7 +72,6 @@ class FormDialog extends React.Component{
             alertMessage:alertMessage,
             alertType:alertType
         });
-        console.log()
 
     }
 
