@@ -5,12 +5,8 @@ import { BrowserRouter } from "react-router-dom";
 import {baseUrl} from './Reusable/baseUrl';
 import Dashboard from './Dashboard/DashboardComponent';
 import { Backdrop, CircularProgress ,Snackbar,Dialog,DialogTitle,DialogContent,Button,Grid, withStyles} from '@material-ui/core';
-import MuiAlert from '@material-ui/lab/Alert';
 import PropTypes from 'prop-types';
 
-const Alert=(props) =>{
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-  }
 
   const useStyles=theme=>({
    
@@ -25,32 +21,15 @@ class Main extends Component{
         super(props);
         this.state={
             isSignedIn:false,
-            userdata:{},
+            userdata:[],
             token:null,
             isLoading:false,
-            isInvalid:false,
-            alertMessage:'',
-            alertType:'',
             isModal:false
         }
         this.child = React.createRef();
     }
 
-    showAlert=(alertType,alertMessage)=>{
-
-        this.setState({
-            isInvalid:true,
-            alertMessage:alertMessage,
-            alertType:alertType
-        });
-
-    }
-
-    handleAlertEnd=()=>{
-        this.setState({
-            isInvalid:false
-        });
-    }
+ 
 
    async componentDidMount()
     {
@@ -84,11 +63,14 @@ class Main extends Component{
         if(res.ok)
         {
             let data=await res.json();
-            let user=data.user;
-            console.log(user);
+            let user=[];
+            user.push(data.user);
+           // console.log(user);
             await this.setState({
                 userdata:user
             });
+
+        
 
         }
       }
@@ -104,19 +86,19 @@ class Main extends Component{
 
             if(!localStorage.getItem('isAdmin'))
             {
-                if(this.state.userdata.user_role.isAdmin && this.state.userdata.user_role.isStaff)
+                if(this.state.userdata[0].user_role.isAdmin && this.state.userdata[0].user_role.isStaff)
                 this.setState({
                     isModal:true,
                     loading:false
                 });
-                else if(this.state.userdata.user_role.isAdmin)
+                else if(this.state.userdata[0].user_role.isAdmin)
                 {
                     localStorage.setItem('isAdmin',true);
                     localStorage.setItem('isStaff',false);
                     this.setState({isSignedIn:true});
                    
                 }
-                else if(this.state.userdata.user_role.isStaff)
+                else if(this.state.userdata[0].user_role.isStaff)
                 {
                     localStorage.setItem('isAdmin',false);
                     localStorage.setItem('isStaff',true);
@@ -173,50 +155,9 @@ class Main extends Component{
         localStorage.removeItem('isAdmin');
         localStorage.removeItem('isStaff');
         await this.authCheckup();
-
-        // this.setState({
-        //     isSignedIn:false,
-        //     token:null,
-        //     userdata:{}
-        // });
     }
 
-
-    //Rest of api calls
-
-    handleTask=async (data)=>{
-        try
-        {
-            let res=await fetch(baseUrl+'/customerAdmin/data',{
-                method:'POST',
-                headers:{
-                    'Authorization':'Bearer '+this.state.token,
-                    'Content-Type':'application/json'
-                },
-                credentials:'same-origin',
-                body:JSON.stringify(data)
-            });
-    
-            if(res.ok)
-            {
-                let result=await res.json();
-    
-                console.log(result);
-    
-                this.showAlert('success','Task has been added successfully');
-    
-            }
-            else
-            {
-                this.showAlert('error','Task couldn\'t be added.\n Try again after sometime!!');
-            }
-        }
-        catch(err)
-        {
-            this.showAlert('error',err);
-        }
-       
-    }
+   
 
     
 
@@ -229,7 +170,7 @@ class Main extends Component{
         <BrowserRouter>
             <Switch>
                 <Route exact path='/' component={Login}/>
-                <Route exact path="/dashboard" component={()=> <Dashboard logout={this.logout} isSignedIn={this.state.isSignedIn} token={this.state.token} userdata={this.state.userdata} onSubmit={(data)=>this.handleTask(data)} /> }/>
+                <Route exact path="/dashboard" component={()=> <Dashboard logout={this.logout} isSignedIn={this.state.isSignedIn} token={this.state.token} userdata={this.state.userdata} /> }/>
             </Switch>
             {
                 this.state.isSignedIn ? <Redirect to='/dashboard' /> : <Redirect to='/'/>
@@ -238,11 +179,7 @@ class Main extends Component{
             <Backdrop  open={this.state.isLoading} style={{color:'#fff',zIndex:'10'}}>
                     <CircularProgress color="inherit" />
                 </Backdrop>
-                <Snackbar open={this.state.isInvalid} onClose={this.handleAlertEnd} autoHideDuration={5000} anchorOrigin={{horizontal:'center',vertical:'top'}}>
-                <Alert severity={this.state.alertType} >
-                {this.state.alertMessage}
-                </Alert>
-            </Snackbar>
+               
 
             <Dialog 
             open={this.state.isModal}

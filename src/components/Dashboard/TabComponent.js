@@ -12,10 +12,13 @@ class TabComponent extends Component{
         }
     }
 
-    handleTabChange=(event,newValue)=>{
-        this.setState({
+    handleTabChange=async (event,newValue)=>{
+        await this.setState({
             tabValue:newValue
         });
+
+        this.props.onChange(this.state.tabValue);
+
     }
 
     render()
@@ -31,13 +34,13 @@ class TabComponent extends Component{
                   textColor="secondary"
                   variant="fullWidth"
                 >
-                <Tab label="Pending Task"/>
+                <Tab label="Pending Task" value={0}/>
 
-                <Tab label="Completed Task" />
+                <Tab label="Completed Task" value={1} />
 
-                <Tab label="New Task" />
+               {this.props.isAdmin==="true" && <Tab label="New Task" value={2} />}
 
-                <Tab label="Income" />
+                <Tab label="Income" value={3} />
                 
                 </Tabs>
 
