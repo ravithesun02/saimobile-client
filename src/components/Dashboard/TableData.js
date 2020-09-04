@@ -1,20 +1,39 @@
 import React , {Component} from 'react';
-import { withStyles,Grid, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Typography, TablePagination, IconButton, InputLabel, Select, FormControl, MenuItem } from '@material-ui/core';
+import { withStyles,Grid, Paper, TableContainer,DialogTitle,DialogActions,Button, Table, TableHead, TableRow, TableCell, TableBody, Typography, TablePagination, IconButton, InputLabel, Select, FormControl, MenuItem, Dialog, DialogContent, TextField } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
+import moment from 'moment';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import DeleteIcon from '@material-ui/icons/Delete';
 const useStyles=theme=>({
     root: {
         width: '100vw',
       },
       container: {
-        maxHeight: 440,
+        maxHeight: '50vh',
       },
       tableCell:{
           backgroundColor:'#798071',
           color:'white',
           minWidth:'16%'
-      }
+      },
+      dialogPaper:{
+        minHeight:'30vh',
+        minWidth:'80vw'
+    },
+    dialogTitle:{
+        display:'flex',
+        justifyContent:'space-between',
+        alignItems:'center'
+    },
+    footerModal:{
+        display:'flex',
+        justifyContent:'space-around'
+    },
+    buttonWidth:{
+        width:'25%'
+    }
 });
 
 
@@ -26,7 +45,13 @@ class TableData extends Component{
         this.state={
             page:0,
             rowsPerPage:10,
-            selectedUser:'none'
+            selectedUser:'none',
+            remarkModalOpen:false,
+            remarkModalData:'',
+            editModalOpen:false,
+            status:'none',
+            cost:0,
+            editDetail:[]
         }
     }
 
@@ -86,16 +111,88 @@ handleAssign=(row)=>{
 
     console.log(user);
 
+    this.props.onAssign(user);
+
 }
 
-   
+   setModalOpen=(row)=>{
+       this.setState({
+           remarkModalOpen:true,
+           remarkModalData:row.remark
+       });
+   }
+
+   handleCancel=()=>{
+       this.setState({
+           remarkModalOpen:false,
+           remarkModalData:''
+       })
+   }
+
+   handleChange=name=>event=>{
+    this.setState({
+        [name]:event.target.value
+    })
+}
+
+handleEditModalOpen=(row)=>{
+    let data=[];
+    data.push(row);
+
+    this.setState({
+        editModalOpen:true,
+        editDetail:data
+    });
+
+}
+
+handleEditModal=()=>{
+    this.setState({
+        editModalOpen:false,
+        editDetail:[],
+        status:'none',
+        cost:0
+    });
+}
+
+    validateEdit=()=>{
+
+        if(this.state.status==='none' || this.state.cost<0)
+        {
+            this.props.showAlert('error','Not a valid Input ! Try Again !!');
+            return true;
+        }
+        return false;
+
+    }
+
+    handleSubmit=()=>{
+
+        if(this.validateEdit())
+            return;
+        
+        let data={};
+
+        data._id=this.state.editDetail[0]._id;
+        data.status=true;
+        data.cost=this.state.cost;
+
+        console.log(data);
+
+        this.props.handleStatus(data);
+
+        this.handleEditModal();
+
+
+    }
 
     render()
     {
-        const {classes,isAdmin,isStaff,width,users,data}=this.props;
+        const {classes,isAdmin,isStaff,width,users,data,tabValue}=this.props;
         const {page,rowsPerPage} = this.state;
        // console.log(users);
         return(
+            <React.Fragment>
             <Paper style={{width:width}} elevation={3}>
                 <TableContainer className={classes.container}>
                     <Table stickyHeader>
@@ -104,9 +201,11 @@ handleAssign=(row)=>{
                                 <TableCell align="center" className={classes.tableCell}>IMEI No.</TableCell>
                                 <TableCell align="center" className={classes.tableCell}>NAME</TableCell>
                                 <TableCell align="center" className={classes.tableCell}>MOBILE No</TableCell>
+                                <TableCell align="center" className={classes.tableCell}> {tabValue===0 ? 'ASSIGNED ON':tabValue === 1 ? 'COMPLETED ON':'ADDED ON'} </TableCell>
                                 <TableCell align="center" className={classes.tableCell}>STATUS</TableCell>
                                 <TableCell align="center" className={classes.tableCell}>COST</TableCell>
                                 { isAdmin && <TableCell align="center" className={classes.tableCell}>ASSIGNED</TableCell>}
+                                <TableCell align="center" className={classes.tableCell}> VIEW / EDIT </TableCell>
                             </TableRow>
                         </TableHead>
                        { data.length>0 && <TableBody>
@@ -123,6 +222,9 @@ handleAssign=(row)=>{
                                             <TableCell key={`${row._id}-mobile`} align="center">
                                             {row.mobile}
                                             </TableCell>
+                                            <TableCell key={`${row._id}-date`} align="center">
+                                            {tabValue===0 || tabValue===1 ? `${moment(row.updatedAt).format('DD-MM-YYYY')}` : `${moment(row.createdAt).format('DD-MM-YYYY')}` }
+                                            </TableCell>
                                             <TableCell key={`${row._id}-status`} align="center">
                                              {row.status ? 'Completed':'Pending'}
                                             </TableCell>
@@ -130,8 +232,9 @@ handleAssign=(row)=>{
                                                 {row.cost ? row.cost : 'N/A'}
                                             </TableCell>
                                             {isAdmin && <TableCell key={`${row._id}-assigned`} align="center">
+                                            {row.staff_name && `${row.staff_name}`}
                                             {
-                                                !row.isEdit && 
+                                                (!row.isEdit && !row.staff_name) && 
                                                 <IconButton onClick={()=>{
                                                     console.log(row);
                                                     this.props.onEdit(row);
@@ -185,17 +288,63 @@ handleAssign=(row)=>{
                                                 
                                             }
                                             </TableCell>}
+
+                                            <TableCell>
+
+                                            <Grid container justify="center">
+                                                {
+                                                    tabValue!==2 && 
+                                                    <Grid item xs={2}>
+                                                    </Grid>
+                                                }
+                                                <Grid item xs={4}>
+                                                <IconButton onClick={()=>{
+                                                    this.setModalOpen(row)
+                                                }}>
+                                                    <VisibilityIcon />
+                                                </IconButton>
+                                                </Grid>
+                                             {tabValue!==1 &&
+                                                   <Grid item xs={4}>
+                                                   <IconButton onClick={()=>{
+                                                       this.handleEditModalOpen(row)
+                                                   }}>
+                                                    <EditIcon/>
+                                                   </IconButton> 
+                                                </Grid>}
+
+                                                {
+                                                    tabValue===2 && 
+                                                    <Grid item xs={4}>
+                                                    <IconButton onClick={()=>{
+                                                        console.log(row);
+
+                                                        this.props.onDelete(row);
+                                                    }}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                    </Grid>
+                                                }
+
+                                            </Grid>
+
+                                            </TableCell>
                                         </TableRow>
                                     )
                                 })
                             }
                         </TableBody>}
                         {data.length === 0 && 
-                            <TableBody>
-                                <Typography variant="h6">
+                                <TableBody>
+                                    <TableRow>
+                                    
+                                    <Typography variant="h6">
                                     No Data Available
-                                </Typography>
-                            </TableBody>
+                                    </Typography>
+                                    </TableRow>
+                                </TableBody>
+                                
+                            
                         }
                     </Table>
                 </TableContainer>
@@ -209,6 +358,78 @@ handleAssign=(row)=>{
                 onChangeRowsPerPage={this.handleRowsperPage}
                 />
             </Paper>
+            <Dialog
+              open={this.state.remarkModalOpen}
+              classes={{ paper: classes.dialogPaper }}
+            >
+            <DialogTitle className={classes.dialogTitle} disableTypography> 
+                <Typography variant="h6">
+                    Remarks
+                </Typography>
+                <IconButton onClick={this.handleCancel}>
+                <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+                {this.state.remarkModalData}
+            </DialogContent>
+            </Dialog>
+            <Dialog 
+             open={this.state.editModalOpen}
+             classes={{paper:classes.dialogPaper}}
+            >
+            <DialogTitle className={classes.dialogTitle} disableTypography> 
+                <Typography variant="h6">
+                   Update the Task
+                </Typography>
+                <IconButton onClick={this.handleEditModal}>
+                <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+               <form autoComplete="off">
+                    <Grid container justify="center" spacing={2}>
+                        <Grid item xs={12} sm={12} md={6}>
+                            <FormControl style={{width:'100%'}}>
+                                <InputLabel>Status</InputLabel>
+                                <Select 
+                                 value={this.state.status}
+                                 onChange={this.handleChange('status')}
+                                 
+                                >
+                                <MenuItem value='none'>Pending</MenuItem>
+                                <MenuItem value='done'>Completed</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={12} md={6}>
+                        <TextField 
+                        label="COST"
+                        id="cost"
+                        type="number"
+                        value={this.state.cost}
+                        variant="standard"
+                        onChange={this.handleChange('cost')}
+                        style={{width:"100%"}}
+                        />
+                        </Grid>
+                    </Grid>
+                </form>
+                        
+            </DialogContent>
+
+            <DialogActions className={classes.footerModal}>
+            <Button color="default" onClick={this.handleEditModal} className={classes.buttonWidth} variant="contained">
+                Cancel
+            </Button>
+            <Button color="primary" onClick={this.handleSubmit} className={classes.buttonWidth} variant="contained">
+                Submit
+            </Button>
+        </DialogActions>
+
+            
+            </Dialog>
+            </React.Fragment>
 
         )
     }

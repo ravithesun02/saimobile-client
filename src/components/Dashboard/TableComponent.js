@@ -1,5 +1,5 @@
 import React , {Component} from 'react';
-import { Grid, withStyles,FormControl,InputLabel,Input, InputAdornment, Hidden } from '@material-ui/core';
+import { Grid, withStyles,FormControl,InputLabel,Input, InputAdornment, Hidden, Button } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
 import TableData from './TableData';
@@ -84,14 +84,14 @@ class TabularComponent extends Component{
            </Grid>
            <Hidden smDown>
            <Grid item sm={12} md={12} style={{marginTop:'2%'}}>
-            <TableData showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} users={users}/>
+            <TableData handleStatus={(data)=>this.props.handleStatus(data)} onDelete={(data)=>this.props.onDelete(data)} tabValue={this.props.tabValue} onAssign={(data)=>this.props.onAssign(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} users={users}/>
             
            </Grid>
            </Hidden>
            <Hidden smUp>
            <Grid item xs={12} style={{marginTop:'3%'}}>
-            <TableData onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} users={users} />
-            
+           <TableData handleStatus={(data)=>this.props.handleStatus(data)} onDelete={(data)=>this.props.onDelete(data)} tabValue={this.props.tabValue} onAssign={(data)=>this.props.onAssign(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} users={users}/>
+           
            </Grid>
            </Hidden>
 

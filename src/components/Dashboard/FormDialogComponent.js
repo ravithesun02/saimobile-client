@@ -61,7 +61,7 @@ class FormDialog extends React.Component{
 
     handleChange=name=>event=>{
         this.setState({
-            [name]:event.target.value.trim()
+            [name]:event.target.value
         })
     }
 

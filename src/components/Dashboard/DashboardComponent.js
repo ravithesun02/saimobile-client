@@ -118,12 +118,13 @@ class Dashboard extends Component
         });
 
 
-        if(this.state.isAdmin)
-        {
-            await this.fetchNewTask();
-        }
+        await this.fetchNewTask();
 
         await this.fetchAllusers();
+
+        this.setState({
+            table_data:this.state.pending_task
+        })
         
 
         this.setState({
@@ -140,6 +141,10 @@ class Dashboard extends Component
 
 
     handleTask=async (data)=>{
+
+        await this.setState({
+            isLoading:true
+        });
         try
         {
             let res=await fetch(baseUrl+'/customerAdmin/data',{
@@ -157,26 +162,52 @@ class Dashboard extends Component
                 let result=await res.json();
     
                 console.log(result);
+
+                if(this.state.isAdmin)
+                {
+                    await this.fetchNewTask();
+                }
     
                 this.showAlert('success','Task has been added successfully');
+
+               await this.setState({
+                isLoading:false
+            });
     
             }
             else
             {
                 this.showAlert('error','Task couldn\'t be added.\n Try again after sometime!!');
+
+               await this.setState({
+                isLoading:false
+            });
             }
         }
         catch(err)
         {
             this.showAlert('error',err);
+
+            await this.setState({
+                isLoading:false
+            });
         }
        
     }
 
     fetchNewTask=async ()=>{
+        let url='';
+        if(this.state.isAdmin)
+        {
+            url=baseUrl+'/customerAdmin/data';
+        }
+        else if(this.state.isStaff)
+        {
+            url=baseUrl+'/customerAdmin/userBase';
+        }
         try
         {
-            let res=await fetch(baseUrl+'/customerAdmin/data',{
+            let res=await fetch(url,{
                 method:'GET',
                 headers:{
                     'Authorization':'Bearer '+this.state.token
@@ -231,9 +262,10 @@ class Dashboard extends Component
        await this.setState({
             new_task:new_task,
             pending_task:pending,
-            completed_task:completed,
-            table_data:pending
+            completed_task:completed
         });
+
+       await this.handleTabChange(this.state.selectedTab);
 
     }
 
@@ -313,6 +345,156 @@ class Dashboard extends Component
         });
     }
 
+    postAssignData=async (data)=>{
+
+        this.setState({
+            isLoading:true
+        });
+
+        try
+        {
+            let res=await fetch(baseUrl+'/customerAdmin/assign',{
+                method:'PUT',
+                headers:{
+                    'Content-Type':'application/json',
+                    'Authorization':'Bearer '+this.state.token
+                },
+                credentials:'same-origin',
+                body:JSON.stringify(data)
+            });
+
+            if(res.ok)
+            {
+                let result=await res.json();
+
+                console.log(result);
+
+                await this.fetchNewTask();
+
+                this.showAlert('success','Task assigned successfully!');
+
+               await this.setState({
+                    isLoading:false
+                });
+            }
+            else
+            {
+                this.showAlert('error','Try again !!');
+
+               await this.setState({
+                isLoading:false
+            });
+            }
+        }
+        catch(err)
+        {
+            this.showAlert('error','Server Error - '+err);
+
+            await this.setState({
+                isLoading:false
+            });
+        }
+
+    }
+
+    deleteNewTask=async (data)=>{
+        // console.log(data);
+        // let user={};
+        // user._id=data._id;
+        this.setState({
+            isLoading:true
+        });
+        try
+        {
+            let res=await fetch(baseUrl+'/customerAdmin/data',{
+                method:'DELETE',
+                headers:{
+                    'Content-Type':'application/json',
+                    'Authorization':'Bearer '+this.state.token
+                },
+                credentials:'same-origin',
+                body:JSON.stringify(data)
+            });
+
+            if(res.ok)
+            {
+                let result=await res.json();
+
+                console.log(result);
+
+                await this.fetchNewTask();
+
+                this.showAlert('success','Deleted successfully !!');
+
+                this.setState({
+                    isLoading:false
+                });
+            }
+            else
+            {
+                this.showAlert('error','Try again !!');
+                this.setState({
+                    isLoading:false
+                });
+            }
+        }
+        catch(err)
+        {
+            this.showAlert('error','Server Error '+err);
+
+            this.setState({
+                isLoading:false
+            });
+        }
+    }
+
+    postStatusUpdate= async (data)=>{
+        this.setState({
+            isLoading:true
+        });
+        try
+        {
+            let res=await fetch(baseUrl+'/customerAdmin/statusUpdate',{
+                method:'PUT',
+                headers:{
+                    'Content-Type':'application/json',
+                    'Authorization':'Bearer '+this.state.token
+                },
+                credentials:'same-origin',
+                body:JSON.stringify(data)
+            });
+
+            if(res.ok)
+            {
+                let result=await res.json();
+
+                console.log(result);
+
+                await this.fetchNewTask();
+
+                this.showAlert('success','Status updated successfully.');
+                this.setState({
+                    isLoading:false
+                });
+            }
+            else
+            {
+                this.showAlert('error','Failed to update');
+                this.setState({
+                    isLoading:false
+                });
+            }
+
+        }
+        catch(err)
+        {
+            this.showAlert('error','Server error '+err);
+            this.setState({
+                isLoading:false
+            });
+        }
+    }
+
 
 
 
@@ -339,7 +521,7 @@ class Dashboard extends Component
                 </Grid>
 
                 <Grid item style={{marginTop:'1%'}}>
-                    <TabularComponent showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleIsEdit(row)} data={this.state.table_data} users={this.state.all_user} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
+                    <TabularComponent handleStatus={(data)=>this.postStatusUpdate(data)} onDelete={(data)=>this.deleteNewTask(data)} tabValue={this.state.selectedTab} onAssign={(data)=>this.postAssignData(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleIsEdit(row)} data={this.state.table_data} users={this.state.all_user} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
                 </Grid>
                    
                 </Grid>
