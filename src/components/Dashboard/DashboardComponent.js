@@ -48,7 +48,8 @@ class Dashboard extends Component
             new_task:[],
             pending_task:[],
             completed_task:[],
-            table_data:[]
+            table_data:[],
+            all_user:[]
         }
     }
 
@@ -121,6 +122,8 @@ class Dashboard extends Component
         {
             await this.fetchNewTask();
         }
+
+        await this.fetchAllusers();
         
 
         this.setState({
@@ -217,7 +220,10 @@ class Dashboard extends Component
                     pending.push(item);
             }
             else
-            new_task.push(item);
+            {
+                item.isEdit=false;
+                new_task.push(item);
+            }
         });
 
         console.log(new_task);
@@ -254,6 +260,59 @@ class Dashboard extends Component
         console.log(this.state.table_data);
     }
 
+    fetchAllusers=async ()=>{
+
+        try
+        {
+            let res=await fetch(baseUrl+'/admin/getAlluser',{
+                method:'GET',
+                headers:{
+                    'Authorization':'Bearer '+this.state.token
+                },
+                credentials:'same-origin'
+            });
+
+            if(res.ok)
+            {
+                let data=await res.json();
+                
+                let users=data.result;
+
+                await this.setState({
+                    all_user:users
+                });
+
+            }
+            else
+            {
+                this.showAlert('warning','Server Error!!');
+            }
+    
+        }
+        catch(err)
+        {
+
+            this.showAlert('error','Server Error!!-'+err);
+        }
+
+    
+
+    }
+
+    toggleIsEdit=async (row)=>{
+        let data=this.state.table_data;
+        data.forEach((item,index)=>{
+            if(item._id===row._id)
+            {
+                item.isEdit=!item.isEdit;
+            }
+        });
+
+        await this.setState({
+            table_data:data
+        });
+    }
+
 
 
 
@@ -280,7 +339,7 @@ class Dashboard extends Component
                 </Grid>
 
                 <Grid item style={{marginTop:'1%'}}>
-                    <TabularComponent data={this.state.table_data} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
+                    <TabularComponent showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleIsEdit(row)} data={this.state.table_data} users={this.state.all_user} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
                 </Grid>
                    
                 </Grid>

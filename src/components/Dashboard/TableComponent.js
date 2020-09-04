@@ -54,12 +54,22 @@ class TabularComponent extends Component{
 
   componentDidMount()
   {
-    console.log(this.props.data);
+    
+  }
+
+  toggleEdit=(row)=>{
+    console.log(row);
+    this.props.onEdit(row);
+  }
+
+  showAlert=(alertType,alertMessage)=>{
+   // console.log(alertType);
+    this.props.showAlert(alertType,alertMessage);
   }
 
     render()
     {
-        const {classes,data,isAdmin,isStaff}=this.props;
+        const {classes,data,isAdmin,isStaff,users}=this.props;
         // console.log(data);
         return(
           <Grid direction="row" container spacing={1} className={classes.flex}>
@@ -74,13 +84,13 @@ class TabularComponent extends Component{
            </Grid>
            <Hidden smDown>
            <Grid item sm={12} md={12} style={{marginTop:'2%'}}>
-            <TableData data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} />
+            <TableData showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} users={users}/>
             
            </Grid>
            </Hidden>
            <Hidden smUp>
            <Grid item xs={12} style={{marginTop:'3%'}}>
-            <TableData data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} />
+            <TableData onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} users={users} />
             
            </Grid>
            </Hidden>
