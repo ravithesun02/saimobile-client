@@ -1,5 +1,5 @@
 import React , {Component} from 'react';
-import { AppBar, Tabs, Tab, Paper, Hidden } from '@material-ui/core';
+import {  Tabs, Tab, Paper, Hidden } from '@material-ui/core';
 
 
 class TabComponent extends Component{

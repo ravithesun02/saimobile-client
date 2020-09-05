@@ -1,8 +1,9 @@
 import React , {Component} from 'react';
-import { Grid, withStyles,FormControl,InputLabel,Input, InputAdornment, Hidden, Button } from '@material-ui/core';
+import { Grid, withStyles, InputAdornment, IconButton } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
 import TableData from './TableData';
+import RotateLeftSharpIcon from '@material-ui/icons/RotateLeftSharp';
 
 const useStyles=theme=>({
 
@@ -52,19 +53,56 @@ const CssTextField = withStyles({
 
 class TabularComponent extends Component{
 
-  componentDidMount()
+  constructor(props)
   {
-    
+    super(props);
+    this.state={
+      toggleReset:false,
+      searchTerm:''
+    }
   }
 
   toggleEdit=(row)=>{
-    console.log(row);
+  //  console.log(row);
     this.props.onEdit(row);
   }
 
   showAlert=(alertType,alertMessage)=>{
    // console.log(alertType);
     this.props.showAlert(alertType,alertMessage);
+  }
+
+  handleFocus=()=>{
+   this.setState({
+     toggleReset:!this.state.toggleReset,
+     searchTerm:''
+   });
+  }
+
+  reset=()=>{
+    this.setState({
+      toggleReset:false,
+      searchTerm:''
+    });
+  }
+
+  componentDidUpdate(nextProps)
+  {
+    const {tabValue}=this.props;
+
+    if(tabValue !== nextProps.tabValue)
+    {
+      this.reset();
+    }
+  }
+
+  handleSearchChange=(event)=>{
+
+    this.setState({
+      searchTerm:event.target.value
+    })
+    this.props.onSearch(event.target.value);
+
   }
 
     render()
@@ -79,21 +117,32 @@ class TabularComponent extends Component{
                     <InputAdornment position="start">
                     <SearchIcon style={{ color: 'white' }} />
                   </InputAdornment>
+                  
+                  
+                ),
+                endAdornment:(
+                  <InputAdornment position="end">
+                 {this.state.toggleReset && 
+                   <IconButton onClick={()=>{this.props.closeSearch();this.reset();}}>
+                    <RotateLeftSharpIcon style={{ color: 'white' }} />
+                  </IconButton>}
+                  </InputAdornment>
                 )
-            }} />
+            }} 
+            value={this.state.searchTerm}
+            onFocus={this.handleFocus}
+
+            onChange={this.handleSearchChange}
+            
+            />
            </Grid>
-           <Hidden smDown>
+          
            <Grid item sm={12} md={12} style={{marginTop:'2%'}}>
-            <TableData handleStatus={(data)=>this.props.handleStatus(data)} onDelete={(data)=>this.props.onDelete(data)} tabValue={this.props.tabValue} onAssign={(data)=>this.props.onAssign(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100%'} users={users}/>
+            <TableData userdata={this.props.userdata} handleStatus={(data)=>this.props.handleStatus(data)} onDelete={(data)=>this.props.onDelete(data)} tabValue={this.props.tabValue} onAssign={(data)=>this.props.onAssign(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'95vw'} users={users}/>
             
            </Grid>
-           </Hidden>
-           <Hidden smUp>
-           <Grid item xs={12} style={{marginTop:'3%'}}>
-           <TableData handleStatus={(data)=>this.props.handleStatus(data)} onDelete={(data)=>this.props.onDelete(data)} tabValue={this.props.tabValue} onAssign={(data)=>this.props.onAssign(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleEdit(row)} data={data} isAdmin={isAdmin} isStaff={isStaff} width={'100vw'} users={users}/>
            
-           </Grid>
-           </Hidden>
+          
 
             
           </Grid>

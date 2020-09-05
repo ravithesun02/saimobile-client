@@ -4,7 +4,7 @@ import { Route, Switch, Redirect } from "react-router-dom";
 import { BrowserRouter } from "react-router-dom";
 import {baseUrl} from './Reusable/baseUrl';
 import Dashboard from './Dashboard/DashboardComponent';
-import { Backdrop, CircularProgress ,Snackbar,Dialog,DialogTitle,DialogContent,Button,Grid, withStyles} from '@material-ui/core';
+import { Backdrop, CircularProgress ,Dialog,DialogTitle,DialogContent,Button,Grid, withStyles} from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 
@@ -33,7 +33,7 @@ class Main extends Component{
 
    async componentDidMount()
     {
-        console.log(this.props);
+       // console.log(this.props);
 
         this.setState({isLoading:true});
        
@@ -77,7 +77,7 @@ class Main extends Component{
 
 
     authCheckup=async ()=>{
-        console.log('called');
+       // console.log('called');
         if(localStorage.getItem('jwt'))
         {
             

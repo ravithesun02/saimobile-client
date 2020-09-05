@@ -11,12 +11,12 @@ const useStyles=theme=>({
         width: '100vw',
       },
       container: {
-        maxHeight: '50vh',
+        maxHeight: '48vh',
       },
       tableCell:{
           backgroundColor:'#798071',
           color:'white',
-          minWidth:'16%'
+          minWidth:170
       },
       dialogPaper:{
         minHeight:'30vh',
@@ -71,7 +71,7 @@ class TableData extends Component{
 
 handleSelectedUser=(event)=>{
 
-   // console.log(newValue);
+   // //console.log(newValue);
    // console.log(event.target.value);
     this.setState({
         selectedUser:event.target.value
@@ -109,13 +109,14 @@ handleAssign=(row)=>{
         }
     });
 
-    console.log(user);
+   // console.log(user);
 
     this.props.onAssign(user);
 
 }
 
    setModalOpen=(row)=>{
+      // console.log(row.remark.split('\n'));
        this.setState({
            remarkModalOpen:true,
            remarkModalData:row.remark
@@ -177,7 +178,7 @@ handleEditModal=()=>{
         data.status=true;
         data.cost=this.state.cost;
 
-        console.log(data);
+        //console.log(data);
 
         this.props.handleStatus(data);
 
@@ -188,9 +189,9 @@ handleEditModal=()=>{
 
     render()
     {
-        const {classes,isAdmin,isStaff,width,users,data,tabValue}=this.props;
+        const {classes,isAdmin,isStaff,width,users,data,tabValue,userdata}=this.props;
         const {page,rowsPerPage} = this.state;
-       // console.log(users);
+       // //console.log(users);
         return(
             <React.Fragment>
             <Paper style={{width:width}} elevation={3}>
@@ -204,6 +205,7 @@ handleEditModal=()=>{
                                 <TableCell align="center" className={classes.tableCell}> {tabValue===0 ? 'ASSIGNED ON':tabValue === 1 ? 'COMPLETED ON':'ADDED ON'} </TableCell>
                                 <TableCell align="center" className={classes.tableCell}>STATUS</TableCell>
                                 <TableCell align="center" className={classes.tableCell}>COST</TableCell>
+                                {isStaff && tabValue===0 && <TableCell align="center" className={classes.tableCell}> HELP </TableCell> }
                                 { isAdmin && <TableCell align="center" className={classes.tableCell}>ASSIGNED</TableCell>}
                                 <TableCell align="center" className={classes.tableCell}> VIEW / EDIT </TableCell>
                             </TableRow>
@@ -231,12 +233,76 @@ handleEditModal=()=>{
                                             <TableCell key={`${row._id}-cost`} align="center">
                                                 {row.cost ? row.cost : 'N/A'}
                                             </TableCell>
+                                            {
+                                                isStaff && tabValue===0 && 
+                                                <TableCell key={`${row._id}-help`} align="center">
+                                                {
+                                                    (!row.isEdit) && 
+                                                    <IconButton onClick={()=>{
+                                                        //console.log(row);
+                                                        this.props.onEdit(row);
+                                                    }}>
+                                                        <EditIcon fontSize="small" />
+                                                    </IconButton>
+                                                }
+                                                {
+                                                    row.isEdit && 
+                                                    <Grid container justify="center">
+                                                        <Grid item xs={6}>
+                                                        <FormControl  style={{width:'100%'}}>
+                                                    <InputLabel>Users</InputLabel>
+                                                    <Select value={this.state.selectedUser}
+                                                        onChange={this.handleSelectedUser}
+                                                       
+                                                    >
+                                                    <MenuItem value='none'>None</MenuItem>
+                                                    {
+                                                        users.map((item,index)=>{
+                                                            if(item._id !== userdata[0]._id)
+                                                            return(
+                                                                <MenuItem value={item._id}> {item.name.toUpperCase()} </MenuItem>
+                                                            )
+
+                                                            return (
+                                                                <React.Fragment></React.Fragment>
+                                                            )
+                                                        })
+                                                    }
+    
+                                                    </Select>
+    
+                                                    </FormControl>
+                                                        </Grid>
+                                                        <Grid item xs={2}>
+                                                            <IconButton onClick={()=>{
+    
+                                                               // //console.log(row);
+    
+                                                               this.handleAssign(row);
+                                                                
+                                                            }}>
+                                                                <CheckIcon/>
+                                                            </IconButton>
+                                                        </Grid>
+                                                        <Grid item xs={2}>
+                                                            <IconButton onClick={()=>{
+                                                               // //console.log(row);
+                                                                this.props.onEdit(row);
+                                                            }}>
+                                                                <CloseIcon/>
+                                                            </IconButton>
+                                                        </Grid>
+                                                    </Grid>
+                                                    
+                                                }
+                                                </TableCell>
+                                            }
                                             {isAdmin && <TableCell key={`${row._id}-assigned`} align="center">
                                             {row.staff_name && `${row.staff_name}`}
                                             {
                                                 (!row.isEdit && !row.staff_name) && 
                                                 <IconButton onClick={()=>{
-                                                    console.log(row);
+                                                    //console.log(row);
                                                     this.props.onEdit(row);
                                                 }}>
                                                     <EditIcon fontSize="small" />
@@ -268,7 +334,7 @@ handleEditModal=()=>{
                                                     <Grid item xs={2}>
                                                         <IconButton onClick={()=>{
 
-                                                           // console.log(row);
+                                                           // //console.log(row);
 
                                                            this.handleAssign(row);
                                                             
@@ -278,7 +344,7 @@ handleEditModal=()=>{
                                                     </Grid>
                                                     <Grid item xs={2}>
                                                         <IconButton onClick={()=>{
-                                                           // console.log(row);
+                                                           // //console.log(row);
                                                             this.props.onEdit(row);
                                                         }}>
                                                             <CloseIcon/>
@@ -317,7 +383,7 @@ handleEditModal=()=>{
                                                     tabValue===2 && 
                                                     <Grid item xs={4}>
                                                     <IconButton onClick={()=>{
-                                                        console.log(row);
+                                                        //console.log(row);
 
                                                         this.props.onDelete(row);
                                                     }}>
@@ -371,7 +437,13 @@ handleEditModal=()=>{
                 </IconButton>
             </DialogTitle>
             <DialogContent dividers>
-                {this.state.remarkModalData}
+                {this.state.remarkModalData.split('\n').map((item,index)=>{
+
+                    return(
+                        <Typography variant="body1"> {item} </Typography>
+                    )
+
+                })}
             </DialogContent>
             </Dialog>
             <Dialog 

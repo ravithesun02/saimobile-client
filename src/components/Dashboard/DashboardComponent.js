@@ -1,11 +1,12 @@
 import React , {Component} from 'react';
 import Header from './HeaderComponent';
-import { Grid, Button, withStyles, Hidden ,Snackbar,Backdrop,CircularProgress} from '@material-ui/core';
+import { Grid, withStyles ,Snackbar,Backdrop,CircularProgress} from '@material-ui/core';
 import TabComponent from './TabComponent';
 import TabularComponent from './TableComponent';
 import { baseUrl } from '../Reusable/baseUrl';
 import { Redirect } from 'react-router-dom';
 import MuiAlert from '@material-ui/lab/Alert';
+import Income from './IncomeComponent';
 
 
 const useStyles=theme=>({
@@ -49,7 +50,9 @@ class Dashboard extends Component
             pending_task:[],
             completed_task:[],
             table_data:[],
-            all_user:[]
+            table_dataCopy:[],
+            all_user:[],
+            total_task:[]
         }
     }
 
@@ -94,7 +97,7 @@ class Dashboard extends Component
    async componentWillMount()
     {
 
-        //console.log(this.props);
+        ////console.log(this.props);
         this.setState({
             isLoading:true
         });
@@ -123,7 +126,8 @@ class Dashboard extends Component
         await this.fetchAllusers();
 
         this.setState({
-            table_data:this.state.pending_task
+            table_data:this.state.pending_task,
+            table_dataCopy:this.state.pending_task
         })
         
 
@@ -131,7 +135,7 @@ class Dashboard extends Component
             isLoading:false
         });
 
-        console.log(this.state);
+        //console.log(this.state);
     }
 
 
@@ -161,7 +165,7 @@ class Dashboard extends Component
             {
                 let result=await res.json();
     
-                console.log(result);
+                //console.log(result);
 
                 if(this.state.isAdmin)
                 {
@@ -219,7 +223,11 @@ class Dashboard extends Component
             {
                 let data=await res.json();
 
-                console.log(data);
+                //console.log(data);
+
+               await this.setState({
+                    total_task:data.result
+                });
 
                await this.filterReceivedData(data.result);
             }
@@ -248,7 +256,10 @@ class Dashboard extends Component
                 if(item.status)
                     completed.push(item);
                 else
-                    pending.push(item);
+                   { 
+                       item.isEdit=false;
+                       pending.push(item);
+                   }
             }
             else
             {
@@ -257,7 +268,7 @@ class Dashboard extends Component
             }
         });
 
-        console.log(new_task);
+        //console.log(new_task);
 
        await this.setState({
             new_task:new_task,
@@ -271,7 +282,7 @@ class Dashboard extends Component
 
     handleTabChange=async (data)=>{
         // 0:-Pending task 1:- completed task 2:-new task (only for admin) 3:-Income
-        console.log(data);
+        //console.log(data);
         await this.setState({
             selectedTab:data
         });
@@ -289,7 +300,11 @@ class Dashboard extends Component
                 table_data:this.state.new_task
             });
 
-        console.log(this.state.table_data);
+        //console.log(this.state.table_data);
+
+        await this.setState({
+            table_dataCopy:this.state.table_data
+        });
     }
 
     fetchAllusers=async ()=>{
@@ -351,9 +366,16 @@ class Dashboard extends Component
             isLoading:true
         });
 
+        let url='';
+
+        if(this.state.isStaff && this.state.selectedTab===0)
+            url=baseUrl+'/customerAdmin/data';
+        else if(this.state.isAdmin && this.state.selectedTab===2)
+            url=baseUrl+'/customerAdmin/assign';
+
         try
         {
-            let res=await fetch(baseUrl+'/customerAdmin/assign',{
+            let res=await fetch(url,{
                 method:'PUT',
                 headers:{
                     'Content-Type':'application/json',
@@ -367,7 +389,7 @@ class Dashboard extends Component
             {
                 let result=await res.json();
 
-                console.log(result);
+                //console.log(result);
 
                 await this.fetchNewTask();
 
@@ -398,7 +420,7 @@ class Dashboard extends Component
     }
 
     deleteNewTask=async (data)=>{
-        // console.log(data);
+        // //console.log(data);
         // let user={};
         // user._id=data._id;
         this.setState({
@@ -420,7 +442,7 @@ class Dashboard extends Component
             {
                 let result=await res.json();
 
-                console.log(result);
+                //console.log(result);
 
                 await this.fetchNewTask();
 
@@ -468,7 +490,7 @@ class Dashboard extends Component
             {
                 let result=await res.json();
 
-                console.log(result);
+                //console.log(result);
 
                 await this.fetchNewTask();
 
@@ -493,6 +515,37 @@ class Dashboard extends Component
                 isLoading:false
             });
         }
+    }
+
+    onSearch=async (searchTerm)=>{
+
+        let tableData;
+        
+        //console.log(searchTerm);
+
+        tableData=this.state.table_data.filter((item)=>{
+            //console.log(item.name.includes(searchTerm));
+            return (
+                item.imei.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1 || 
+                item.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1||
+                item.mobile.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1 ||
+                item.staff_name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1 ||
+                item.remark.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1 ||
+                item.cost=== searchTerm
+            );
+        });
+
+        //console.log(tableData);
+
+       await this.setState({
+            table_data:tableData
+        });
+    }
+
+    resetSearch=()=>{
+        this.setState({
+            table_data:this.state.table_dataCopy
+        });
     }
 
 
@@ -520,9 +573,17 @@ class Dashboard extends Component
                     <TabComponent onChange={(data)=>this.handleTabChange(data)} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
                 </Grid>
 
-                <Grid item style={{marginTop:'1%'}}>
-                    <TabularComponent handleStatus={(data)=>this.postStatusUpdate(data)} onDelete={(data)=>this.deleteNewTask(data)} tabValue={this.state.selectedTab} onAssign={(data)=>this.postAssignData(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleIsEdit(row)} data={this.state.table_data} users={this.state.all_user} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
-                </Grid>
+                {this.state.selectedTab !== 3 && 
+                    <Grid item style={{marginTop:'1%'}}>
+                    <TabularComponent closeSearch={()=>this.resetSearch()} onSearch={(data)=>this.onSearch(data)} userdata={this.state.userdata} handleStatus={(data)=>this.postStatusUpdate(data)} onDelete={(data)=>this.deleteNewTask(data)} tabValue={this.state.selectedTab} onAssign={(data)=>this.postAssignData(data)} showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} onEdit={(row)=>this.toggleIsEdit(row)} data={this.state.table_data} users={this.state.all_user} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff}/>
+                    </Grid>
+                }
+                {
+                    this.state.selectedTab===3 &&
+                    <Grid item style={{marginTop:'1%'}}>
+                        <Income showAlert={(alertType,alertMessage)=>this.showAlert(alertType,alertMessage)} total_task={this.state.total_task} isAdmin={this.state.isAdmin} isStaff={this.state.isStaff} users={this.state.all_user} />
+                    </Grid>
+                }
                    
                 </Grid>
                 </Grid>
